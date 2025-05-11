@@ -1,5 +1,5 @@
 "use server";
-//
+// eslint-disable-next-line
 import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
