@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -31,7 +31,44 @@ export default function AddDebtPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
   const supabase = createClientComponentClient();
+  
+  // Check authentication status when component mounts
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        setIsLoading(true);
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error || !user) {
+          console.error('Authentication error:', error?.message || 'User not found');
+          toast({
+            title: "Authentication Required",
+            description: "Please sign in to add a debt",
+            variant: "destructive"
+          });
+          router.push('/sign-in?returnUrl=/protected/debts/add');
+          return;
+        }
+        
+        setUser(user);
+      } catch (err) {
+        console.error('Error checking authentication:', err);
+        toast({
+          title: "Error",
+          description: "Failed to verify authentication. Please try signing in again.",
+          variant: "destructive"
+        });
+        router.push('/sign-in?returnUrl=/protected/debts/add');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkAuth();
+  }, [supabase, router, toast]);
   
   // Get today's date for default value
   const today = new Date();
@@ -55,7 +92,18 @@ export default function AddDebtPage() {
     setIsSubmitting(true);
     
     try {
-      // Insert debt
+      // Make sure user is authenticated
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to add a debt",
+          variant: "destructive"
+        });
+        router.push('/sign-in?returnUrl=/protected/debts/add');
+        return;
+      }
+      
+      // Insert debt with user_id
       const { data, error } = await supabase
         .from('debts')
         .insert({
@@ -66,6 +114,7 @@ export default function AddDebtPage() {
           due_date: values.due_date,
           strategy: values.strategy,
           notes: values.notes || null,
+          user_id: user.id, // Associate with current user
         })
         .select();
         
@@ -90,6 +139,33 @@ export default function AddDebtPage() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-6 p-4 md:p-8 items-center justify-center min-h-[300px]">
+        <div className="mint-card p-8 text-center">
+          <div className="animate-pulse mb-4">
+            <div className="h-8 w-8 rounded-full bg-primary/20 mx-auto"></div>
+          </div>
+          <p className="text-muted-foreground">Verifying authentication...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return (
+      <div className="flex flex-col gap-6 p-4 md:p-8 items-center justify-center min-h-[300px]">
+        <div className="mint-card p-8 text-center">
+          <p className="text-lg font-medium mb-4">Authentication Required</p>
+          <p className="text-muted-foreground mb-6">Please sign in to add a debt</p>
+          <Link href="/sign-in?returnUrl=/protected/debts/add" className="mint-button inline-flex">
+            Sign In
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="flex flex-col gap-6 p-4 md:p-8">
       <div className="flex items-center gap-2">
@@ -246,7 +322,7 @@ export default function AddDebtPage() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting} className="mint-button">
                   {isSubmitting ? "Adding..." : "Add Debt"}
                 </Button>
               </div>

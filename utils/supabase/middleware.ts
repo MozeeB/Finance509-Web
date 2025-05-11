@@ -1,62 +1,34 @@
-import { createServerClient } from "@supabase/ssr";
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { type NextRequest, NextResponse } from "next/server";
 
+/**
+ * Minimal middleware that only refreshes the Supabase session
+ * No authentication checks or redirects to prevent loops
+ */
 export const updateSession = async (request: NextRequest) => {
-  // This `try/catch` block is only here for the interactive tutorial.
-  // Feel free to remove once you have Supabase connected.
-  try {
-    // Create an unmodified response
-    let response = NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
+  // Create a response object
+  const response = NextResponse.next();
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value),
-            );
-            response = NextResponse.next({
-              request,
-            });
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options),
-            );
-          },
-        },
-      },
-    );
-
-    // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
-    const user = await supabase.auth.getUser();
-
-    // protected routes
-    if (request.nextUrl.pathname.startsWith("/protected") && user.error) {
-      return NextResponse.redirect(new URL("/sign-in", request.url));
-    }
-
-    if (request.nextUrl.pathname === "/" && !user.error) {
-      return NextResponse.redirect(new URL("/protected", request.url));
-    }
-
+  // Skip middleware for assets and API routes
+  if (
+    request.nextUrl.pathname.includes('/_next/') ||
+    request.nextUrl.pathname.includes('/api/') ||
+    request.nextUrl.pathname.match(/\.(ico|svg|png|jpg|jpeg|css|js)$/)
+  ) {
     return response;
-  } catch (e) {
-    // If you are here, a Supabase client could not be created!
-    // This is likely because you have not set up environment variables.
-    // Check out http://localhost:3000 for Next Steps.
-    return NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
+  }
+
+  try {
+    // Create a Supabase client for the middleware
+    const supabase = createMiddlewareClient({ req: request, res: response });
+    
+    // Just refresh the session cookies without any redirects
+    await supabase.auth.getSession();
+    
+    // Return the response with updated cookies
+    return response;
+  } catch (error) {
+    console.error('Middleware error:', error);
+    return response;
   }
 };

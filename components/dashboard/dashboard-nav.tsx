@@ -19,37 +19,37 @@ import {
 const navItems = [
   {
     title: "Dashboard",
-    href: "/protected",
+    href: "/dashboard",
     icon: <Home className="h-5 w-5" />
   },
   {
     title: "Accounts",
-    href: "/protected/accounts",
+    href: "/dashboard/accounts",
     icon: <Wallet className="h-5 w-5" />
   },
   {
     title: "Transactions",
-    href: "/protected/transactions",
+    href: "/dashboard/transactions",
     icon: <ArrowUpDown className="h-5 w-5" />
   },
   {
     title: "Budgets",
-    href: "/protected/budgets",
+    href: "/dashboard/budgets",
     icon: <DollarSign className="h-5 w-5" />
   },
   {
     title: "Debts",
-    href: "/protected/debts",
+    href: "/dashboard/debts",
     icon: <LineChart className="h-5 w-5" />
   },
   {
     title: "Emergency Fund",
-    href: "/protected/emergency-fund",
+    href: "/dashboard/emergency-fund",
     icon: <Shield className="h-5 w-5" />
   },
   {
     title: "Settings",
-    href: "/protected/settings",
+    href: "/dashboard/settings",
     icon: <Settings className="h-5 w-5" />
   }
 ];

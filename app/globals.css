@@ -80,26 +80,67 @@
 
 /* Custom styles for Mint-like UI */
 @layer components {
+  /* Card Components */
   .mint-card {
-    @apply bg-white rounded-2xl shadow-sm border border-border p-6 transition-all hover:shadow-md;
+    @apply bg-white rounded-2xl shadow-sm border border-border p-6 transition-all hover:shadow-md dark:bg-card;
   }
   
+  .mint-card-hover {
+    @apply hover:border-primary/50 hover:shadow-lg transition-all duration-300;
+  }
+  
+  .mint-card-highlight {
+    @apply border-l-4 border-l-primary;
+  }
+  
+  /* Button Components */
   .mint-button {
-    @apply bg-primary text-primary-foreground rounded-full px-6 py-3 font-medium transition-all hover:opacity-90;
+    @apply bg-primary text-primary-foreground rounded-full px-6 py-3 font-medium transition-all hover:opacity-90 hover:shadow-md active:scale-95;
   }
   
+  .mint-button-secondary {
+    @apply bg-secondary text-secondary-foreground rounded-full px-6 py-3 font-medium transition-all hover:bg-secondary/80 hover:shadow-sm active:scale-95;
+  }
+  
+  .mint-button-outline {
+    @apply border border-primary bg-transparent text-primary rounded-full px-6 py-3 font-medium transition-all hover:bg-primary/10 active:scale-95;
+  }
+  
+  .mint-button-danger {
+    @apply bg-destructive text-destructive-foreground rounded-full px-6 py-3 font-medium transition-all hover:opacity-90 hover:shadow-md active:scale-95;
+  }
+  
+  .mint-button-icon {
+    @apply rounded-full p-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all;
+  }
+  
+  /* Form Components */
   .mint-input {
-    @apply rounded-xl border border-input bg-background px-4 py-3 text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary;
+    @apply rounded-xl border border-input bg-background px-4 py-3 text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary transition-all;
   }
   
+  .mint-label {
+    @apply text-sm font-medium text-muted-foreground mb-1.5 block;
+  }
+  
+  .mint-select {
+    @apply rounded-xl border border-input bg-background px-4 py-3 text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary pr-10;
+  }
+  
+  /* Progress Components */
   .mint-progress {
     @apply h-2 w-full rounded-full bg-secondary overflow-hidden;
   }
   
   .mint-progress-bar {
-    @apply h-full rounded-full bg-primary transition-all;
+    @apply h-full rounded-full bg-primary transition-all duration-500;
   }
   
+  .mint-progress-large {
+    @apply h-4 w-full rounded-full bg-secondary overflow-hidden;
+  }
+  
+  /* Navigation Components */
   .mint-nav-item {
     @apply flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-all hover:bg-secondary;
   }
@@ -108,11 +149,76 @@
     @apply bg-secondary text-primary font-medium;
   }
   
+  /* Badge Components */
+  .mint-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground;
+  }
+  
+  .mint-badge-primary {
+    @apply bg-primary/10 text-primary;
+  }
+  
+  .mint-badge-success {
+    @apply bg-[hsl(var(--income))]/10 text-[hsl(var(--income))];
+  }
+  
+  .mint-badge-warning {
+    @apply bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500;
+  }
+  
+  .mint-badge-danger {
+    @apply bg-[hsl(var(--expense))]/10 text-[hsl(var(--expense))];
+  }
+  
+  /* Text Styles */
   .income-text {
     @apply text-[hsl(var(--income))];
   }
   
   .expense-text {
     @apply text-[hsl(var(--expense))];
+  }
+  
+  .mint-title {
+    @apply text-2xl font-bold;
+  }
+  
+  .mint-subtitle {
+    @apply text-sm text-muted-foreground mt-1;
+  }
+  
+  /* Layout Components */
+  .mint-container {
+    @apply p-6 md:p-8 space-y-6;
+  }
+  
+  .mint-header {
+    @apply flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6;
+  }
+  
+  .mint-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+  
+  /* Animation Classes */
+  .mint-fade-in {
+    @apply animate-in fade-in duration-500;
+  }
+  
+  .mint-slide-in {
+    @apply animate-in slide-in-from-bottom-4 duration-500;
+  }
+  
+  .mint-scale-in {
+    @apply animate-in zoom-in-95 duration-300;
+  }
+  
+  /* Empty State */
+  .mint-empty-state {
+    @apply flex flex-col items-center justify-center text-center p-8 gap-4;
+  }
+  
+  .mint-icon-container {
+    @apply h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary;
   }
 }

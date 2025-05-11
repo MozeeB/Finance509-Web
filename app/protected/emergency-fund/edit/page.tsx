@@ -29,6 +29,7 @@ export default function EditEmergencyFundPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [fundExists, setFundExists] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const supabase = createClientComponentClient();
   
   // Initialize form with default values
@@ -42,10 +43,27 @@ export default function EditEmergencyFundPage() {
     },
   });
 
-  // Fetch existing emergency fund data if it exists
+  // Check authentication and fetch existing emergency fund data if it exists
   useEffect(() => {
-    async function fetchEmergencyFund() {
+    async function checkAuthAndFetchData() {
       try {
+        // First check authentication
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        
+        if (authError || !user) {
+          console.error('Authentication error:', authError?.message || 'User not found');
+          toast({
+            title: "Authentication Required",
+            description: "Please sign in to manage your emergency fund",
+            variant: "destructive"
+          });
+          router.push('/sign-in?returnUrl=/protected/emergency-fund/edit');
+          return;
+        }
+        
+        setUser(user);
+        
+        // Then fetch emergency fund data
         const { data, error } = await supabase
           .from('emergency_fund')
           .select('*')
@@ -67,13 +85,24 @@ export default function EditEmergencyFundPage() {
       }
     }
     
-    fetchEmergencyFund();
-  }, [supabase, form]);
+    checkAuthAndFetchData();
+  }, [supabase, form, router, toast]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     
     try {
+      // Make sure user is authenticated
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to manage your emergency fund",
+          variant: "destructive"
+        });
+        router.push('/sign-in?returnUrl=/protected/emergency-fund/edit');
+        return;
+      }
+      
       if (fundExists) {
         // Update existing emergency fund
         const { error } = await supabase
@@ -83,8 +112,7 @@ export default function EditEmergencyFundPage() {
             current_amount: values.current_amount,
             target_months: values.target_months,
             notes: values.notes || null,
-          })
-          .eq('id', (await supabase.from('emergency_fund').select('id').single()).data.id);
+          });
           
         if (error) throw error;
         
@@ -100,7 +128,7 @@ export default function EditEmergencyFundPage() {
             goal_amount: values.goal_amount,
             current_amount: values.current_amount,
             target_months: values.target_months,
-            notes: values.notes || null,
+            notes: values.notes || null
           });
           
         if (error) throw error;
@@ -141,6 +169,33 @@ export default function EditEmergencyFundPage() {
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-6 p-4 md:p-8 items-center justify-center min-h-[300px]">
+        <div className="mint-card p-8 text-center">
+          <div className="animate-pulse mb-4">
+            <div className="h-8 w-8 rounded-full bg-primary/20 mx-auto"></div>
+          </div>
+          <p className="text-muted-foreground">Loading emergency fund data...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return (
+      <div className="flex flex-col gap-6 p-4 md:p-8 items-center justify-center min-h-[300px]">
+        <div className="mint-card p-8 text-center">
+          <p className="text-lg font-medium mb-4">Authentication Required</p>
+          <p className="text-muted-foreground mb-6">Please sign in to manage your emergency fund</p>
+          <Link href="/sign-in?returnUrl=/protected/emergency-fund/edit" className="mint-button inline-flex">
+            Sign In
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="flex flex-col gap-6 p-4 md:p-8">
       <div className="flex items-center gap-2">
@@ -251,7 +306,7 @@ export default function EditEmergencyFundPage() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting} className="mint-button">
                   {isSubmitting ? "Saving..." : (fundExists ? "Update" : "Create")}
                 </Button>
               </div>

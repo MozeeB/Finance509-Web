@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/components/auth-provider";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Account name is required" }),
@@ -49,7 +50,10 @@ export default function AddAccountPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user, isLoading } = useAuth();
   const supabase = createClientComponentClient();
+  
+  // No need for the authentication check effect anymore - handled by AuthProvider
   
   // Initialize form with default values
   const form = useForm<z.infer<typeof formSchema>>({
@@ -67,65 +71,52 @@ export default function AddAccountPage() {
     setIsSubmitting(true);
     
     try {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      // Make sure we have a user
       if (!user) {
-        throw new Error("User not authenticated");
+        toast({
+          title: "Error",
+          description: "You must be logged in to create an account",
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        router.push('/sign-in?returnUrl=/protected/accounts/add');
+        return;
       }
       
-      // Generate a UUID for the account
-      const accountId = crypto.randomUUID();
+      // Create a clean account object
+      const account = {
+        name: values.name,
+        type: values.type,
+        value: values.value,
+        currency: values.currency,
+        notes: values.notes || "",
+        user_id: user.id,
+        is_active: true,
+        created_at: new Date().toISOString(),
+      };
+      
+      console.log('Creating account with user_id:', user.id);
+      
+      console.log('Creating account:', account);
       
       // Insert account
       const { data, error } = await supabase
         .from('accounts')
-        .insert({
-          id: accountId,
-          name: values.name,
-          type: values.type,
-          value: values.value,
-          currency: values.currency,
-          notes: values.notes,
-          user_id: user.id,
-          created_at: new Date().toISOString(),
-        })
+        .insert(account)
         .select();
         
-      if (error) throw error;
-      
-      // Create account balance record
-      await supabase
-        .from('account_balances')
-        .insert({
-          account_id: accountId,
-          account_name: values.name,
-          account_type: values.type,
-          transaction_total: 0,
-          account_initial_value: values.value,
-          current_value: values.value,
+      if (error) {
+        console.error('Error creating account:', error);
+        toast({
+          title: "Error",
+          description: `Failed to create account: ${error.message}`,
+          variant: "destructive"
         });
-      
-      // Update net worth
-      const { data: netWorthData } = await supabase
-        .from('net_worth')
-        .select('*')
-        .single();
-        
-      if (netWorthData) {
-        const isAsset = values.value >= 0;
-        const isDebt = values.value < 0;
-        
-        const updatedNetWorth = {
-          total_assets: isAsset ? netWorthData.total_assets + values.value : netWorthData.total_assets,
-          total_debts: isDebt ? netWorthData.total_debts + values.value : netWorthData.total_debts,
-          net_worth: netWorthData.net_worth + values.value,
-        };
-        
-        await supabase
-          .from('net_worth')
-          .update(updatedNetWorth);
+        setIsSubmitting(false);
+        return;
       }
+      
+      console.log('Account created successfully:', data);
       
       toast({
         title: "Account added",
@@ -136,9 +127,15 @@ export default function AddAccountPage() {
       router.refresh();
     } catch (error) {
       console.error('Error adding account:', error);
+      
+      let errorMessage = "There was a problem adding your account. Please try again.";
+      if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage += ` Error: ${(error as any).message}`;
+      }
+      
       toast({
         title: "Error",
-        description: "There was a problem adding your account. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -146,6 +143,8 @@ export default function AddAccountPage() {
     }
   }
 
+  // Authentication is now handled by the ProtectedRoute component in the layout
+  
   return (
     <div className="flex flex-col gap-6 p-4 md:p-8">
       <div className="flex items-center gap-2">
@@ -276,7 +275,7 @@ export default function AddAccountPage() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting} className="mint-button">
                   {isSubmitting ? "Saving..." : "Save Account"}
                 </Button>
               </div>

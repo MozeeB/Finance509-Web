@@ -50,7 +50,7 @@ export default async function AccountsPage() {
         <h1 className="text-2xl font-bold">Accounts</h1>
         <Link 
           href="/protected/accounts/add" 
-          className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="mint-button flex items-center gap-2"
         >
           <PlusCircle className="h-4 w-4" />
           Add Account
@@ -59,20 +59,20 @@ export default async function AccountsPage() {
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-lg border bg-card p-4">
+        <div className="mint-card p-4">
           <div className="text-sm font-medium text-muted-foreground">Total Assets</div>
-          <div className="mt-1 text-2xl font-bold text-green-500">{formatCurrency(totalAssets)}</div>
+          <div className="mt-1 text-2xl font-bold text-[hsl(var(--income))]">+{formatCurrency(totalAssets)}</div>
         </div>
         
-        <div className="rounded-lg border bg-card p-4">
+        <div className="mint-card p-4">
           <div className="text-sm font-medium text-muted-foreground">Total Liabilities</div>
-          <div className="mt-1 text-2xl font-bold text-red-500">{formatCurrency(totalLiabilities)}</div>
+          <div className="mt-1 text-2xl font-bold text-[hsl(var(--expense))]">-{formatCurrency(Math.abs(totalLiabilities))}</div>
         </div>
         
-        <div className="rounded-lg border bg-card p-4">
+        <div className="mint-card p-4">
           <div className="text-sm font-medium text-muted-foreground">Net Worth</div>
-          <div className={`mt-1 text-2xl font-bold ${netWorth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-            {formatCurrency(netWorth)}
+          <div className={`mt-1 text-2xl font-bold ${netWorth >= 0 ? 'text-[hsl(var(--income))]' : 'text-[hsl(var(--expense))]'}`}>
+            {netWorth >= 0 ? '+' : '-'}{formatCurrency(Math.abs(netWorth))}
           </div>
         </div>
       </div>
@@ -82,7 +82,7 @@ export default async function AccountsPage() {
         {Object.entries(accountsByType).map(([type, accounts]) => (
           <div key={type} className="space-y-3">
             <h2 className="text-xl font-semibold">{type} Accounts</h2>
-            <div className="rounded-md border">
+            <div className="mint-card overflow-hidden">
               <div className="overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
@@ -102,7 +102,7 @@ export default async function AccountsPage() {
                         <td className="px-4 py-3 text-left font-medium">{account.name}</td>
                         <td className="px-4 py-3 text-left text-muted-foreground">{account.notes || '-'}</td>
                         <td className={`px-4 py-3 text-right font-medium ${
-                          account.value >= 0 ? 'text-green-500' : 'text-red-500'
+                          account.value >= 0 ? 'income-text' : 'expense-text'
                         }`}>
                           {formatCurrency(account.value, account.currency)}
                         </td>
@@ -134,7 +134,7 @@ export default async function AccountsPage() {
         ))}
 
         {Object.keys(accountsByType).length === 0 && (
-          <div className="rounded-md border p-8 text-center">
+          <div className="mint-card p-8 text-center">
             <h3 className="text-lg font-medium">No accounts found</h3>
             <p className="mt-1 text-sm text-muted-foreground">
               Add your first account to start tracking your finances.
@@ -142,7 +142,7 @@ export default async function AccountsPage() {
             <div className="mt-4">
               <Link 
                 href="/protected/accounts/add" 
-                className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                className="mint-button inline-flex items-center gap-2"
               >
                 <PlusCircle className="h-4 w-4" />
                 Add Account

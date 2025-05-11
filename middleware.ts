@@ -1,8 +1,13 @@
-import { type NextRequest } from "next/server";
-import { updateSession } from "@/utils/supabase/middleware";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+/**
+ * Extremely minimal middleware that just passes through all requests
+ * No authentication checks, no redirects, no Supabase calls
+ */
+export function middleware(request: NextRequest) {
+  // Just pass through all requests
+  return NextResponse.next();
 }
 
 export const config = {

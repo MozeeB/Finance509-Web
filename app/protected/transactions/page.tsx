@@ -7,8 +7,26 @@ export default async function TransactionsPage() {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    // Handle case where user is not authenticated
+    return (
+      <div className="p-6">
+        <h1 className="text-2xl font-bold">Authentication Required</h1>
+        <p className="mt-2">Please sign in to view your transactions.</p>
+        <Link href="/sign-in" className="mint-button inline-block mt-4">Sign In</Link>
+      </div>
+    );
+  }
 
-  // Fetch transactions
+  // Fetch accounts for the current user
+  const { data: accounts } = await supabase
+    .from('accounts')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('name');
+
+  // Fetch transactions for the current user's accounts
   const { data: transactions } = await supabase
     .from('transactions')
     .select(`
@@ -21,10 +39,15 @@ export default async function TransactionsPage() {
       description,
       total,
       created_at,
-      accounts(name)
+      accounts(id, name)
     `)
+    .in('account_id', accounts?.map(account => account.id) || [])
     .order('date', { ascending: false })
     .limit(50);
+    
+  // Encode accounts for URL params
+  const encodedAccounts = encodeURIComponent(JSON.stringify(accounts || []));
+  const addTransactionUrl = `/protected/transactions/add?accounts=${encodedAccounts}`;
 
   return (
     <div className="flex flex-col gap-6 p-6 md:p-8">
@@ -36,7 +59,7 @@ export default async function TransactionsPage() {
           </p>
         </div>
         <Link 
-          href="/protected/transactions/add" 
+          href={addTransactionUrl} 
           className="mint-button flex items-center gap-2"
         >
           <PlusCircle className="h-4 w-4" />
@@ -72,7 +95,12 @@ export default async function TransactionsPage() {
                     className="border-b hover:bg-muted/50 transition-colors"
                   >
                     <td className="px-4 py-3 text-sm">{new Date(transaction.date).toLocaleDateString()}</td>
-                    <td className="px-4 py-3 text-sm">{transaction.accounts ? transaction.accounts.name : ''}</td>
+                    <td className="px-4 py-3 text-sm">
+                      {transaction.accounts ? 
+                        (typeof transaction.accounts === 'object' && transaction.accounts !== null && 'name' in transaction.accounts ? 
+                          String(transaction.accounts.name) : '') : 
+                        ''}                        
+                    </td>
                     <td className="px-4 py-3 text-sm font-medium">{transaction.description}</td>
                     <td className="px-4 py-3 text-sm">
                       <span className="inline-flex items-center rounded-full px-2 py-1 text-xs bg-secondary">
@@ -95,7 +123,7 @@ export default async function TransactionsPage() {
                     <div className="flex flex-col items-center gap-2">
                       <p>No transactions found.</p>
                       <Link 
-                        href="/protected/transactions/add" 
+                        href={addTransactionUrl} 
                         className="text-primary hover:underline text-sm"
                       >
                         Add your first transaction to get started

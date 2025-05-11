@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -39,6 +40,7 @@ export default function SettingsPage() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const supabase = createClientComponentClient();
   
   // Initialize profile form
@@ -68,7 +70,20 @@ export default function SettingsPage() {
     async function fetchUserProfile() {
       try {
         // Get authenticated user
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        
+        if (authError || !user) {
+          console.error('Authentication error:', authError?.message || 'User not found');
+          toast({
+            title: "Authentication Required",
+            description: "Please sign in to access settings",
+            variant: "destructive"
+          });
+          router.push('/sign-in?returnUrl=/protected/settings');
+          return;
+        }
+        
+        setUser(user);
         
         if (user) {
           // Get user profile from users table
@@ -110,17 +125,22 @@ export default function SettingsPage() {
     }
     
     fetchUserProfile();
-  }, [supabase, profileForm, toast]);
+  }, [supabase, profileForm, toast, router]);
 
   async function onSubmitProfile(values: z.infer<typeof profileFormSchema>) {
     setIsSubmittingProfile(true);
     
     try {
-      // Get authenticated user
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) throw new Error("User not authenticated");
-      
+      // Make sure user is authenticated
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to update your profile",
+          variant: "destructive"
+        });
+        router.push('/sign-in?returnUrl=/protected/settings');
+        return;
+      }
       // Update user profile in users table
       const { error } = await supabase
         .from('users')
@@ -160,6 +180,17 @@ export default function SettingsPage() {
     setIsSubmittingPassword(true);
     
     try {
+      // Make sure user is authenticated
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to update your password",
+          variant: "destructive"
+        });
+        router.push('/sign-in?returnUrl=/protected/settings');
+        return;
+      }
+      
       // Update password
       const { error } = await supabase.auth.updateUser({
         password: values.new_password
@@ -215,6 +246,33 @@ export default function SettingsPage() {
     );
   }
 
+  if (isLoadingProfile) {
+    return (
+      <div className="flex flex-col gap-6 p-4 md:p-8 items-center justify-center min-h-[300px]">
+        <div className="mint-card p-8 text-center">
+          <div className="animate-pulse mb-4">
+            <div className="h-8 w-8 rounded-full bg-primary/20 mx-auto"></div>
+          </div>
+          <p className="text-muted-foreground">Loading profile data...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return (
+      <div className="flex flex-col gap-6 p-4 md:p-8 items-center justify-center min-h-[300px]">
+        <div className="mint-card p-8 text-center">
+          <p className="text-lg font-medium mb-4">Authentication Required</p>
+          <p className="text-muted-foreground mb-6">Please sign in to access your settings</p>
+          <Link href="/sign-in?returnUrl=/protected/settings" className="mint-button inline-flex">
+            Sign In
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="flex flex-col gap-6 p-4 md:p-8">
       <h1 className="text-2xl font-bold">Settings</h1>
@@ -342,7 +400,7 @@ export default function SettingsPage() {
                   </div>
                   
                   <div className="flex justify-end">
-                    <Button type="submit" disabled={isSubmittingProfile}>
+                    <Button type="submit" disabled={isSubmittingProfile} className="mint-button">
                       {isSubmittingProfile ? "Saving..." : "Save Changes"}
                     </Button>
                   </div>
@@ -406,7 +464,7 @@ export default function SettingsPage() {
                   </div>
                   
                   <div className="flex justify-end">
-                    <Button type="submit" disabled={isSubmittingPassword}>
+                    <Button type="submit" disabled={isSubmittingPassword} className="mint-button">
                       {isSubmittingPassword ? "Updating..." : "Update Password"}
                     </Button>
                   </div>
@@ -427,7 +485,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <Button 
                 variant="outline" 
-                className="w-full"
+                className="w-full mint-button-outline"
                 onClick={handleSignOut}
               >
                 <LogOut className="mr-2 h-4 w-4" />

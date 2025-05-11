@@ -40,20 +40,52 @@ export const signUpAction = async (formData: FormData) => {
 };
 
 export const signInAction = async (formData: FormData) => {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  const supabase = await createClient();
+  try {
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const returnUrl = formData.get("returnUrl") as string || "/protected";
+    const supabase = await createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+    // Get the remember me checkbox value
+    const rememberMe = formData.get("remember") === "on";
 
-  if (error) {
-    return encodedRedirect("error", "/sign-in", error.message);
+    if (!email || !password) {
+      return encodedRedirect("error", "/sign-in", "Email and password are required");
+    }
+
+    // Sign in with password
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error("Sign in error:", error.message);
+      // Keep the returnUrl when redirecting back to sign-in page on error
+      const redirectPath = returnUrl ? `/sign-in?returnUrl=${encodeURIComponent(returnUrl)}` : "/sign-in";
+      return encodedRedirect("error", redirectPath, error.message);
+    }
+
+    // If remember me is checked, set a longer session
+    if (rememberMe) {
+      try {
+        // Set user metadata to remember the user's preference
+        await supabase.auth.updateUser({
+          data: { remember_me: true }
+        });
+      } catch (updateError) {
+        console.error("Error updating user preferences:", updateError);
+        // Continue even if this fails
+      }
+    }
+
+    // Redirect to the return URL if provided, otherwise go to protected area
+    const decodedReturnUrl = decodeURIComponent(returnUrl);
+    return redirect(decodedReturnUrl.startsWith("/") ? decodedReturnUrl : "/protected");
+  } catch (e) {
+    console.error("Unexpected error during sign in:", e);
+    return encodedRedirect("error", "/sign-in", "An unexpected error occurred. Please try again.");
   }
-
-  return redirect("/protected");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
