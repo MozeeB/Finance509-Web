@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { formatCurrency } from "@/utils/format";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { Account } from "@/types/database";
 
 export default async function AccountsPage() {
   const supabase = await createClient();
@@ -26,7 +27,7 @@ export default async function AccountsPage() {
   // Group accounts by type
   const accountsByType: Record<string, any[]> = {};
   
-  accounts?.forEach(account => {
+  accounts?.forEach((account: Account) => {
     if (!accountsByType[account.type]) {
       accountsByType[account.type] = [];
     }
@@ -35,12 +36,12 @@ export default async function AccountsPage() {
 
   // Calculate totals
   const totalAssets = accounts
-    ?.filter(a => a.value > 0)
-    .reduce((sum, account) => sum + account.value, 0) || 0;
+    ?.filter((a: Account) => a.value > 0)
+    .reduce((sum: number, account: Account) => sum + account.value, 0) || 0;
     
   const totalLiabilities = accounts
-    ?.filter(a => a.value < 0)
-    .reduce((sum, account) => sum + account.value, 0) || 0;
+    ?.filter((a: Account) => a.value < 0)
+    .reduce((sum: number, account: Account) => sum + account.value, 0) || 0;
     
   const netWorth = totalAssets + totalLiabilities;
 
