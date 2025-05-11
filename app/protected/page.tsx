@@ -8,6 +8,7 @@ import { DebtOverview } from "@/components/dashboard/debt-overview";
 import { EmergencyFund } from "@/components/dashboard/emergency-fund";
 import { formatCurrency } from "../../utils/format";
 import { ArrowUpDown, Wallet, PiggyBank, CreditCard, TrendingUp } from "lucide-react";
+import { Account, Budget, Debt, Transaction } from "@/types/database";
 
 export default async function FinanceDashboard() {
   const supabase = await createClient();
@@ -58,10 +59,10 @@ export default async function FinanceDashboard() {
     .eq('type', 'Expense');
 
   // Calculate spent amount for each budget
-  const budgetsWithProgress = budgets?.map(budget => {
+  const budgetsWithProgress = budgets?.map((budget: Budget) => {
     const spent = transactionsForBudget
-      ?.filter(t => t.category === budget.category)
-      ?.reduce((sum, t) => sum + Math.abs(t.total), 0) || 0;
+      ?.filter((t: Transaction) => t.category === budget.category)
+      ?.reduce((sum: number, t: Transaction) => sum + Math.abs(t.total), 0) || 0;
     
     return {
       ...budget,
@@ -89,12 +90,12 @@ export default async function FinanceDashboard() {
     .lte('date', new Date().toISOString());
 
   const monthlyIncome = monthlyTransactions
-    ?.filter(t => t.type === 'Income')
-    ?.reduce((sum, t) => sum + t.total, 0) || 0;
+    ?.filter((t: Transaction) => t.type === 'Income')
+    ?.reduce((sum: number, t: Transaction) => sum + t.total, 0) || 0;
 
   const monthlyExpenses = monthlyTransactions
-    ?.filter(t => t.type === 'Expense')
-    ?.reduce((sum, t) => sum + Math.abs(t.total), 0) || 0;
+    ?.filter((t: Transaction) => t.type === 'Expense')
+    ?.reduce((sum: number, t: Transaction) => sum + Math.abs(t.total), 0) || 0;
 
   return (
     <div className="flex-1 w-full flex flex-col gap-6 p-6 md:p-8" suppressHydrationWarning>
@@ -204,8 +205,8 @@ export default async function FinanceDashboard() {
         <div className="mint-card md:col-span-2">
           <h3 className="text-lg font-medium mb-4">Account Balances</h3>
           <div className="space-y-4">
-            {accounts?.map(account => {
-              const balance = accountBalances?.find(ab => ab.account_id === account.id);
+            {accounts?.map((account: Account) => {
+              const balance = accountBalances?.find((ab: any) => ab.account_id === account.id);
               return (
                 <div key={account.id} className="flex items-center justify-between border-b pb-3 last:border-0 last:pb-0">
                   <div>
@@ -233,7 +234,7 @@ export default async function FinanceDashboard() {
             {budgetsWithProgress.length === 0 ? (
               <p className="text-sm text-muted-foreground">No budgets found.</p>
             ) : (
-              budgetsWithProgress.map((budget) => (
+              budgetsWithProgress.slice(0, 3).map((budget: Budget & { spent_amount: number; percentage: number }) => (
                 <div key={budget.id} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div>
@@ -265,7 +266,7 @@ export default async function FinanceDashboard() {
             {!debts || debts.length === 0 ? (
               <p className="text-sm text-muted-foreground">No debts found.</p>
             ) : (
-              debts.map((debt) => (
+              debts.map((debt: Debt) => (
                 <div key={debt.id} className="flex items-center justify-between border-b pb-3 last:border-0 last:pb-0">
                   <div>
                     <div className="font-medium">{debt.name}</div>
@@ -309,7 +310,7 @@ export default async function FinanceDashboard() {
                     </td>
                   </tr>
                 ) : (
-                  recentTransactions?.map((transaction) => (
+                  recentTransactions?.map((transaction: Transaction) => (
                     <tr key={transaction.id} className="border-b last:border-0 hover:bg-muted/50">
                       <td className="py-3 text-sm">{new Date(transaction.date).toLocaleDateString()}</td>
                       <td className="py-3 text-sm font-medium">{transaction.description}</td>

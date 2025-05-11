@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { formatCurrency } from "@/utils/format";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";
+import { Budget, Transaction } from "@/types/database";
 
 export default async function BudgetsPage() {
   const supabase = await createClient();
@@ -23,10 +24,10 @@ export default async function BudgetsPage() {
     .lte('date', new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString());
 
   // Calculate spent amount for each budget category
-  const budgetsWithSpent = budgets?.map(budget => {
+  const budgetsWithSpent = budgets?.map((budget: Budget) => {
     const spent = transactions
-      ?.filter(t => t.category === budget.category)
-      .reduce((sum, t) => sum + Math.abs(t.total), 0) || 0;
+      ?.filter((t: Transaction) => t.category === budget.category)
+      .reduce((sum: number, t: Transaction) => sum + Math.abs(t.total), 0) || 0;
     
     return {
       ...budget,
@@ -55,7 +56,7 @@ export default async function BudgetsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {budgetsWithSpent && budgetsWithSpent.length > 0 ? (
-          budgetsWithSpent.map((budget) => (
+          budgetsWithSpent.map((budget: Budget & { spent_amount: number; percentage: number }) => (
             <div 
               key={budget.id} 
               className="mint-card group hover:border-primary/50 transition-all"

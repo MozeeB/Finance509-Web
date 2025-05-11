@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { formatCurrency } from "@/utils/format";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";
+import { Account, Transaction } from "@/types/database";
 
 export default async function TransactionsPage() {
   const supabase = await createClient();
@@ -41,7 +42,7 @@ export default async function TransactionsPage() {
       created_at,
       accounts(id, name)
     `)
-    .in('account_id', accounts?.map(account => account.id) || [])
+    .in('account_id', accounts?.map((account: Account) => account.id) || [])
     .order('date', { ascending: false })
     .limit(50);
     
@@ -89,7 +90,7 @@ export default async function TransactionsPage() {
             </thead>
             <tbody>
               {transactions && transactions.length > 0 ? (
-                transactions.map((transaction) => (
+                transactions.map((transaction: any) => (
                   <tr 
                     key={transaction.id} 
                     className="border-b hover:bg-muted/50 transition-colors"
