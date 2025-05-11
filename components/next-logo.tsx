@@ -1,4 +1,20 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 export default function NextLogo() {
+  // Use client-side only rendering for the SVG to avoid hydration issues with Dark Reader
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    // Return a placeholder with the same dimensions until client-side rendering is complete
+    return <div className="w-[100px] h-[68px]" />;
+  }
+
   return (
     <svg
       aria-label="Next.js logotype"
@@ -6,6 +22,7 @@ export default function NextLogo() {
       role="img"
       viewBox="0 0 394 79"
       width="100"
+      suppressHydrationWarning
     >
       <path
         d="M261.919 0.0330722H330.547V12.7H303.323V79.339H289.71V12.7H261.919V0.0330722Z"

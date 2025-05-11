@@ -1,4 +1,20 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 export default function SupabaseLogo() {
+  // Use client-side only rendering for the SVG to avoid hydration issues with Dark Reader
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    // Return a placeholder with the same dimensions until client-side rendering is complete
+    return <div className="w-[140px] h-[30px]" />;
+  }
+
   return (
     <svg
       aria-label="Supabase logo"
@@ -7,6 +23,7 @@ export default function SupabaseLogo() {
       viewBox="0 0 115 23"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      suppressHydrationWarning
     >
       <g clipPath="url(#clip0_4671_51136)">
         <g clipPath="url(#clip1_4671_51136)">

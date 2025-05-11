@@ -1,7 +1,17 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 
 export default function DeployButton() {
+  // Use client-side only rendering for the SVG to avoid hydration issues with Dark Reader
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   return (
     <>
       <Link
@@ -9,14 +19,19 @@ export default function DeployButton() {
         target="_blank"
       >
         <Button className="flex items-center gap-2" size={"sm"}>
-          <svg
-            className="h-3 w-3"
-            viewBox="0 0 76 65"
-            fill="hsl(var(--background)/1)"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" fill="inherit" />
-          </svg>
+          {isMounted ? (
+            <svg
+              className="h-3 w-3"
+              viewBox="0 0 76 65"
+              fill="hsl(var(--background)/1)"
+              xmlns="http://www.w3.org/2000/svg"
+              suppressHydrationWarning
+            >
+              <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" fill="inherit" suppressHydrationWarning />
+            </svg>
+          ) : (
+            <div className="h-3 w-3" /> // Placeholder while client-side rendering is happening
+          )}
           <span>Deploy to Vercel</span>
         </Button>
       </Link>
