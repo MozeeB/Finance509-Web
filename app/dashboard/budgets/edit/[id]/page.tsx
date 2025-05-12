@@ -8,6 +8,7 @@ import { Budget } from '@/types/database';
 
 interface PageProps {
   params: { id: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 // This is a server component that fetches the initial data
