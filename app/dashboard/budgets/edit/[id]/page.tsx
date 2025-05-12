@@ -6,13 +6,8 @@ import { ArrowLeft } from 'lucide-react';
 import EditBudgetForm from './budget-form';
 import { Budget } from '@/types/database';
 
-interface PageProps {
-  params: { id: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
-
 // This is a server component that fetches the initial data
-export default async function EditBudgetPage({ params }: PageProps) {
+export default async function EditBudgetPage({ params }: { params: { id: string } }) {
   const budgetId = params.id;
   
   // Create a Supabase client for the server component
