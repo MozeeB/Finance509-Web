@@ -6,6 +6,8 @@ import { User } from '@supabase/supabase-js';
 import { Save, Moon, Sun, Bell, BellOff, Download, LogOut, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { getCurrentUser, signOut } from '@/utils/auth-service';
+import toast from 'react-hot-toast';
+import { Profile } from '@/types/database';
 
 export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -77,18 +79,97 @@ export default function SettingsPage() {
       setIsSaving(true);
       const supabase = createClientComponentClient();
       
-      const { error } = await supabase
-        .from('profiles')
-        .update({
+      if (!user?.id) {
+        throw new Error('User not found');
+      }
+      
+      // Direct approach: Update user metadata
+      // This is the most reliable way to update user profile data
+      const { data, error: updateError } = await supabase.auth.updateUser({
+        data: {
           full_name: profile.fullName,
           currency: profile.currency,
           preferences: preferences,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user?.id);
+          updated_at: new Date().toISOString()
+        }
+      });
       
-      if (error) throw error;
+      if (updateError) {
+        console.error('Error updating user:', updateError);
+        throw updateError;
+      }
       
+      // Also update the user's name in the UI
+      if (data?.user) {
+        // Update the user state with the new data
+        setUser(data.user);
+        
+        // Update the profile display name if it exists in metadata
+        const metadata = data.user.user_metadata;
+        if (metadata?.full_name) {
+          setProfile(prev => ({
+            ...prev,
+            fullName: metadata.full_name
+          }));
+        }
+      }
+      
+      console.log('Profile updated successfully:', data?.user?.user_metadata);
+      
+      // Show success message
+      toast.success('Profile updated successfully!');
+      setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      
+      // As a backup, also try to update the profiles table if it exists
+      try {
+        // Check if the profiles table exists
+        const { data: profileCheck, error: checkError } = await supabase
+          .from('profiles')
+          .select('id')
+          .limit(1);
+        
+        // If profiles table exists and there's no error, update or create profile
+        if (!checkError && profileCheck) {
+          // Check if profile exists
+          const { data: existingProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', user.id)
+            .maybeSingle();
+          
+          if (existingProfile) {
+            // Update existing profile
+            await supabase
+              .from('profiles')
+              .update({
+                full_name: profile.fullName,
+                currency: profile.currency,
+                preferences: preferences,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', user.id);
+          } else {
+            // Create new profile
+            await supabase
+              .from('profiles')
+              .insert({
+                id: user.id,
+                full_name: profile.fullName,
+                currency: profile.currency,
+                preferences: preferences,
+                updated_at: new Date().toISOString(),
+              });
+          }
+        }
+      } catch (profileError) {
+        // Just log the error but don't throw it - we already updated the user metadata
+        console.log('Note: Could not update profiles table, but user metadata was updated:', profileError);
+      }
+      
+      // Success has already been handled above
+      
+      // Show success message
+      toast.success('Profile updated successfully!');
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
       
       // Apply dark mode
@@ -99,9 +180,15 @@ export default function SettingsPage() {
           document.documentElement.classList.remove('dark');
         }
       }
-    } catch (error) {
+    } catch (error: any) {
+      // More detailed error logging
       console.error('Error updating profile:', error);
-      setMessage({ type: 'error', text: 'Failed to update profile. Please try again.' });
+      console.error('Error details:', error?.message, error?.details, error?.hint);
+      
+      // Show more specific error message if available
+      const errorMessage = error?.message || 'Failed to update profile. Please try again.';
+      toast.error(errorMessage);
+      setMessage({ type: 'error', text: errorMessage });
     } finally {
       setIsSaving(false);
       
@@ -144,7 +231,7 @@ export default function SettingsPage() {
 
       {message.text && (
         <div className={`p-4 rounded-lg ${
-          message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          message.type.toLowerCase() === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
         }`}>
           {message.text}
         </div>
@@ -203,6 +290,22 @@ export default function SettingsPage() {
                 <option value="AUD">AUD ($)</option>
                 <option value="JPY">JPY (¥)</option>
               </select>
+            </div>
+            
+            {/* Save Profile Button */}
+            <div className="pt-4 mt-4 border-t">
+              <button
+                onClick={handleSaveProfile}
+                disabled={isSaving}
+                className="mint-button w-full flex items-center justify-center gap-2"
+              >
+                {isSaving ? 'Saving...' : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Save Profile
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

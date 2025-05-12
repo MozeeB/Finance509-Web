@@ -12,8 +12,11 @@ export default function DebtsPage() {
   const [debts, setDebts] = useState<Debt[]>([]);
   const [totalDebt, setTotalDebt] = useState(0);
   const [totalInterest, setTotalInterest] = useState(0);
+  const [totalMonthlyPayment, setTotalMonthlyPayment] = useState(0);
+  const [estimatedPayoffDate, setEstimatedPayoffDate] = useState<Date | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [strategy, setStrategy] = useState<'Avalanche' | 'Snowball'>('Avalanche');
+  const [strategy, setStrategy] = useState<'avalanche' | 'snowball'>('avalanche');
+  const [sortOption, setSortOption] = useState<'interest' | 'balance' | 'name'>('interest');
 
   useEffect(() => {
     async function fetchDebts() {
@@ -31,8 +34,8 @@ export default function DebtsPage() {
         // Fetch debts
         const { data: debts } = await supabase
           .from('debts')
-          .select('*')
-          .eq('user_id', user.id);
+          .select('*');
+        // Note: No user_id filter as the column doesn't exist in the debts table
         
         // Map debts to match our component needs
         const mappedDebts = (debts || []).map(debt => ({
@@ -42,19 +45,38 @@ export default function DebtsPage() {
         
         setDebts(mappedDebts);
         
-        // Calculate totals
-        const totalAmount = mappedDebts.reduce((sum, debt) => sum + debt.amount, 0);
-        const totalInterestAmount = mappedDebts.reduce((sum, debt) => {
-          const monthlyInterest = (debt.interest_rate / 100) * debt.amount / 12;
-          return sum + monthlyInterest;
+        // Calculate total debt amount
+        const total = mappedDebts.reduce((sum, debt) => sum + Number(debt.amount), 0);
+        setTotalDebt(total);
+
+        // Calculate total interest paid per year (simplified)
+        const yearlyInterest = mappedDebts.reduce((sum, debt) => {
+          const interestRate = Number(debt.interest_rate) / 100;
+          return sum + (Number(debt.amount) * interestRate);
         }, 0);
+        setTotalInterest(yearlyInterest);
         
-        setTotalDebt(totalAmount);
-        setTotalInterest(totalInterestAmount);
+        // Calculate total monthly payment
+        const monthlyPayment = mappedDebts.reduce((sum, debt) => sum + Number(debt.min_payment || 0), 0);
+        setTotalMonthlyPayment(monthlyPayment);
         
-        // Get preferred strategy
-        if (debts && debts.length > 0) {
-          setStrategy(debts[0].strategy);
+        // Estimate payoff date (simplified calculation)
+        if (mappedDebts.length > 0 && monthlyPayment > 0) {
+          // Simple estimation assuming constant payments and no additional interest accrual
+          // For a more accurate calculation, we would need to simulate month-by-month payoff
+          const averageInterestRate = mappedDebts.reduce((sum, debt) => sum + Number(debt.interest_rate), 0) / mappedDebts.length / 100 / 12;
+          const monthsToPayoff = Math.log(1 / (1 - (total * averageInterestRate / monthlyPayment))) / Math.log(1 + averageInterestRate);
+          
+          // Handle edge cases and ensure reasonable result
+          const finalMonths = isNaN(monthsToPayoff) || !isFinite(monthsToPayoff) || monthsToPayoff < 0 
+            ? total / monthlyPayment  // Fallback to simple division if complex formula fails
+            : monthsToPayoff;
+            
+          const payoffDate = new Date();
+          payoffDate.setMonth(payoffDate.getMonth() + Math.ceil(finalMonths));
+          setEstimatedPayoffDate(payoffDate);
+        } else {
+          setEstimatedPayoffDate(null);
         }
       } catch (error) {
         console.error('Error fetching debts:', error);
@@ -66,16 +88,28 @@ export default function DebtsPage() {
     fetchDebts();
   }, []);
 
-  // Sort debts based on strategy
+  // Sort debts based on selected strategy and sort option
   const sortedDebts = [...debts].sort((a, b) => {
-    if (strategy === 'Avalanche') {
-      // Sort by interest rate (highest first)
-      return b.interest_rate - a.interest_rate;
+    // First apply the strategy sorting
+    if (strategy === 'avalanche') {
+      // Avalanche: Sort by interest rate (highest first)
+      return Number(b.interest_rate) - Number(a.interest_rate);
     } else {
-      // Sort by amount (lowest first)
-      return a.amount - b.amount;
+      // Snowball: Sort by amount (lowest first)
+      return Number(a.amount) - Number(b.amount);
     }
   });
+  
+  // Apply additional sorting if needed
+  const getAdditionalSortedDebts = () => {
+    if (sortOption === 'interest') {
+      return [...debts].sort((a, b) => Number(b.interest_rate) - Number(a.interest_rate));
+    } else if (sortOption === 'balance') {
+      return [...debts].sort((a, b) => Number(b.amount) - Number(a.amount));
+    } else {
+      return [...debts].sort((a, b) => a.name.localeCompare(b.name));
+    }
+  };
 
   if (isLoading) {
     return (
@@ -95,51 +129,72 @@ export default function DebtsPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-8">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 className="text-2xl font-bold">Debts</h1>
-        <Link 
-          href="/dashboard/debts/add" 
-          className="mint-button flex items-center gap-2"
-        >
-          <PlusCircle className="h-4 w-4" />
-          Add Debt
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex rounded-md overflow-hidden border border-input">
+            <button
+              onClick={() => setStrategy('avalanche')}
+              className={`px-3 py-2 text-sm font-medium flex items-center gap-1 ${strategy === 'avalanche' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted/50'}`}
+            >
+              <ArrowDown className="h-4 w-4" />
+              Avalanche
+            </button>
+            <button
+              onClick={() => setStrategy('snowball')}
+              className={`px-3 py-2 text-sm font-medium flex items-center gap-1 ${strategy === 'snowball' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted/50'}`}
+            >
+              <ArrowUp className="h-4 w-4" />
+              Snowball
+            </button>
+          </div>
+          <div className="flex rounded-md overflow-hidden border border-input">
+            <button
+              onClick={() => setSortOption('interest')}
+              className={`px-3 py-1.5 text-sm font-medium ${sortOption === 'interest' ? 'bg-muted text-primary' : 'bg-background hover:bg-muted/50'}`}
+            >
+              Interest
+            </button>
+            <button
+              onClick={() => setSortOption('balance')}
+              className={`px-3 py-1.5 text-sm font-medium ${sortOption === 'balance' ? 'bg-muted text-primary' : 'bg-background hover:bg-muted/50'}`}
+            >
+              Balance
+            </button>
+            <button
+              onClick={() => setSortOption('name')}
+              className={`px-3 py-1.5 text-sm font-medium ${sortOption === 'name' ? 'bg-muted text-primary' : 'bg-background hover:bg-muted/50'}`}
+            >
+              Name
+            </button>
+          </div>
+          <Link href="/dashboard/debts/add" className="mint-button flex items-center gap-1">
+            <PlusCircle className="h-4 w-4" />
+            Add Debt
+          </Link>
+        </div>
       </div>
-
-      {/* Summary Cards */}
+      
+      {/* Debt Summary Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="mint-card p-4">
+        <div className="mint-card bg-muted/30 p-4">
           <div className="text-sm font-medium text-muted-foreground">Total Debt</div>
-          <div className="mt-1 text-2xl font-bold text-[hsl(var(--expense))]">{formatCurrency(totalDebt)}</div>
-        </div>
-        
-        <div className="mint-card p-4">
-          <div className="text-sm font-medium text-muted-foreground">Monthly Interest</div>
-          <div className="mt-1 text-2xl font-bold text-[hsl(var(--expense))]">{formatCurrency(totalInterest)}</div>
-          <div className="text-xs text-muted-foreground mt-1">
-            {formatCurrency(totalInterest * 12)} per year
+          <div className="text-2xl font-bold text-[hsl(var(--expense))]">  
+            {formatCurrency(totalDebt)}
           </div>
         </div>
-        
-        <div className="mint-card p-4">
-          <div className="text-sm font-medium text-muted-foreground">Repayment Strategy</div>
-          <div className="mt-1 text-2xl font-bold flex items-center gap-2">
-            {strategy === 'Avalanche' ? (
-              <>
-                <ArrowDown className="h-5 w-5 text-[hsl(var(--income))]" />
-                <span>Avalanche</span>
-              </>
-            ) : (
-              <>
-                <ArrowUp className="h-5 w-5 text-[hsl(var(--income))]" />
-                <span>Snowball</span>
-              </>
-            )}
+        <div className="mint-card bg-muted/30 p-4">
+          <div className="text-sm font-medium text-muted-foreground">Monthly Payment</div>
+          <div className="text-2xl font-bold text-primary">
+            {formatCurrency(totalMonthlyPayment)}
           </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            {strategy === 'Avalanche' 
-              ? 'Highest interest first' 
-              : 'Smallest balance first'}
+        </div>
+        <div className="mint-card bg-muted/30 p-4">
+          <div className="text-sm font-medium text-muted-foreground">Est. Payoff Date</div>
+          <div className="text-2xl font-bold">
+            {estimatedPayoffDate 
+              ? estimatedPayoffDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
+              : 'N/A'}
           </div>
         </div>
       </div>
@@ -148,28 +203,6 @@ export default function DebtsPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Your Debts</h2>
-          <div className="flex gap-2">
-            <button 
-              onClick={() => setStrategy('Avalanche')}
-              className={`px-3 py-1.5 rounded-md text-sm ${
-                strategy === 'Avalanche' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-muted hover:bg-muted/80'
-              }`}
-            >
-              Avalanche
-            </button>
-            <button 
-              onClick={() => setStrategy('Snowball')}
-              className={`px-3 py-1.5 rounded-md text-sm ${
-                strategy === 'Snowball' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-muted hover:bg-muted/80'
-              }`}
-            >
-              Snowball
-            </button>
-          </div>
         </div>
         
         {sortedDebts.length > 0 ? (
@@ -199,7 +232,7 @@ export default function DebtsPage() {
                       </td>
                       <td className="px-4 py-3 font-medium">
                         <Link 
-                          href={`/dashboard/debts/${debt.id}`} 
+                          href={`/dashboard/debts/view/${debt.id}`} 
                           className="hover:text-primary hover:underline"
                         >
                           {debt.name}
@@ -216,7 +249,7 @@ export default function DebtsPage() {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <Link 
-                          href={`/dashboard/debts/${debt.id}`} 
+                          href={`/dashboard/debts/view/${debt.id}`} 
                           className="mint-button-sm"
                         >
                           View

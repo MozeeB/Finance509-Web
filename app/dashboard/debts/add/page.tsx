@@ -17,7 +17,7 @@ const debtSchema = z.object({
   interest_rate: z.coerce.number().min(0, "Interest rate cannot be negative"),
   min_payment: z.coerce.number().min(0, "Minimum payment cannot be negative"),
   due_date: z.string().nonempty("Due date is required"),
-  strategy: z.enum(["Avalanche", "Snowball"]),
+  strategy: z.enum(["avalanche", "snowball"]),
   notes: z.string().optional(),
 });
 
@@ -41,7 +41,7 @@ export default function AddDebtPage() {
     resolver: zodResolver(debtSchema),
     defaultValues: {
       due_date: new Date().toISOString().split('T')[0],
-      strategy: "Avalanche",
+      strategy: "avalanche",
       interest_rate: 0,
       min_payment: 0,
       notes: "",
@@ -100,7 +100,7 @@ export default function AddDebtPage() {
           due_date: data.due_date,
           strategy: data.strategy,
           notes: data.notes || null,
-          user_id: user.id,
+          // No user_id field as it doesn't exist in the debts table
           created_at: new Date().toISOString(),
         });
       
@@ -318,19 +318,19 @@ export default function AddDebtPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div 
                   className={`p-4 rounded-lg border-2 cursor-pointer flex items-center gap-3 ${
-                    strategy === "Avalanche" 
+                    strategy === "avalanche" 
                       ? "border-primary bg-primary/10" 
                       : "border-muted hover:border-muted-foreground"
                   }`}
-                  onClick={() => setValue("strategy", "Avalanche")}
+                  onClick={() => setValue("strategy", "avalanche")}
                 >
                   <div className={`p-2 rounded-full ${
-                    strategy === "Avalanche" 
+                    strategy === "avalanche" 
                       ? "bg-primary" 
                       : "bg-muted"
                   }`}>
                     <ArrowDown className={`h-4 w-4 ${
-                      strategy === "Avalanche" 
+                      strategy === "avalanche" 
                         ? "text-primary-foreground" 
                         : "text-muted-foreground"
                     }`} />
@@ -343,19 +343,19 @@ export default function AddDebtPage() {
                 
                 <div 
                   className={`p-4 rounded-lg border-2 cursor-pointer flex items-center gap-3 ${
-                    strategy === "Snowball" 
+                    strategy === "snowball" 
                       ? "border-primary bg-primary/10" 
                       : "border-muted hover:border-muted-foreground"
                   }`}
-                  onClick={() => setValue("strategy", "Snowball")}
+                  onClick={() => setValue("strategy", "snowball")}
                 >
                   <div className={`p-2 rounded-full ${
-                    strategy === "Snowball" 
+                    strategy === "snowball" 
                       ? "bg-primary" 
                       : "bg-muted"
                   }`}>
                     <ArrowUp className={`h-4 w-4 ${
-                      strategy === "Snowball" 
+                      strategy === "snowball" 
                         ? "text-primary-foreground" 
                         : "text-muted-foreground"
                     }`} />

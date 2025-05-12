@@ -15,6 +15,8 @@ export default function DashboardLayout({
 }) {
   const [isLoading, setIsLoading] = useState(true);
   const [userName, setUserName] = useState('User');
+  const [netWorth, setNetWorth] = useState(0);
+  const [monthlyChange, setMonthlyChange] = useState(0);
 
   // Get user data on component mount
   useEffect(() => {
@@ -28,6 +30,41 @@ export default function DashboardLayout({
         if (user?.email) {
           // Set user name from email
           setUserName(user.email.split('@')[0] || 'User');
+          
+          // Fetch accounts to calculate net worth
+          const { data: accountsData } = await supabase
+            .from('accounts')
+            .select('*')
+            .eq('user_id', user.id);
+          
+          // Fetch debts
+          const { data: debtsData } = await supabase
+            .from('debts')
+            .select('*');
+          // Note: No user_id filter as the column doesn't exist in the debts table
+          
+          // Calculate assets and liabilities
+          const assets = (accountsData || []).filter(a => Number(a.value) > 0).reduce((sum, a) => sum + Number(a.value), 0);
+          const liabilitiesFromAccounts = (accountsData || []).filter(a => Number(a.value) < 0).reduce((sum, a) => sum + Math.abs(Number(a.value)), 0);
+          
+          // Calculate total debt amount
+          const debtAmount = (debtsData || []).reduce((sum, debt) => sum + Number(debt.amount || 0), 0);
+          
+          // Calculate total liabilities (negative accounts + debts)
+          const totalLiabilities = liabilitiesFromAccounts + debtAmount;
+          
+          // Calculate net worth (assets - liabilities)
+          const totalNetWorth = assets - totalLiabilities;
+          
+          setNetWorth(totalNetWorth);
+          
+          // Calculate monthly change (simplified version)
+          // In a real app, you would compare with previous month's data
+          const monthlyChangeValue = (accountsData || [])
+            .filter(account => account.created_at && new Date(account.created_at).getMonth() === new Date().getMonth())
+            .reduce((sum, account) => sum + Number(account.value), 0);
+          
+          setMonthlyChange(monthlyChangeValue);
         }
       } catch (error) {
         console.error('Error getting user profile:', error);
@@ -89,8 +126,11 @@ export default function DashboardLayout({
             <div className="h-full py-6 pl-4 pr-6">
               <div className="mb-6 mint-card bg-primary/5 dark:bg-primary/10 p-4 hover:border-primary/20 transition-all">
                 <div className="mb-2 text-xs font-medium text-muted-foreground">NET WORTH</div>
-                <div className="text-2xl font-bold">$117,500</div>
-                <div className="mt-1 text-xs text-primary">+$2,500 this month</div>
+                <div className="text-2xl font-bold">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(netWorth)}</div>
+                <div className="mt-1 text-xs text-primary">
+                  {monthlyChange >= 0 ? '+' : ''}
+                  {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(monthlyChange)} this month
+                </div>
               </div>
               <DashboardNav />
               <div className="mt-6 flex justify-center">

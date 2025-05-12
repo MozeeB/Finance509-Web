@@ -75,18 +75,9 @@ export default function DashboardPage() {
           .select('*')
           .order('date', { ascending: false });
         
-        // Initialize variables at a higher scope so they're available throughout the function
-        let formattedTransactions: Transaction[] = [];
-        let currentMonthTransactions: Transaction[] = [];
-        
-        // Get current date information for filtering transactions
-        const currentDate = new Date();
-        const currentMonth = currentDate.getMonth();
-        const currentYear = currentDate.getFullYear();
-        
         if (transactionsData) {
           // Ensure all transaction data is properly formatted
-          formattedTransactions = transactionsData.map(t => ({
+          const formattedTransactions = transactionsData.map(t => ({
             ...t,
             total: Number(t.total),
             date: t.date ? new Date(t.date) : new Date(),
@@ -95,10 +86,11 @@ export default function DashboardPage() {
           setTransactions(formattedTransactions);
           
           // Calculate monthly income and expenses
-          // Using the date variables defined at the higher scope
+          const currentDate = new Date();
+          const currentMonth = currentDate.getMonth();
+          const currentYear = currentDate.getFullYear();
           
-          // Filter transactions for current month - make it available throughout the function
-          const currentMonthTransactions = formattedTransactions.filter((t: Transaction) => {
+          const currentMonthTransactions = formattedTransactions.filter(t => {
             const transactionDate = new Date(t.date);
             return transactionDate.getMonth() === currentMonth && 
                    transactionDate.getFullYear() === currentYear;
@@ -163,16 +155,13 @@ export default function DashboardPage() {
           
           setMonthlyData(monthlyChartData);
           
-          // Use the same current month transactions for expense categories
-          // (reusing the variables defined above)
-          
           // Calculate expense categories
-          const expensesByCategory: Record<string, number> = {};
+          const expensesByCategory = {};
           
           // Group expenses by category
           currentMonthTransactions
-            .filter((t: Transaction) => t.type.toLowerCase() === 'expense')
-            .forEach((transaction: Transaction) => {
+            .filter(t => t.type.toLowerCase() === 'expense')
+            .forEach(transaction => {
               const category = transaction.category || 'Uncategorized';
               if (!expensesByCategory[category]) {
                 expensesByCategory[category] = 0;
@@ -182,7 +171,7 @@ export default function DashboardPage() {
           
           // Convert to array format for chart
           const categoryDataArray = Object.entries(expensesByCategory)
-            .map(([category, amount]) => ({ category, amount: amount as number }))
+            .map(([category, amount]) => ({ category, amount }))
             .sort((a, b) => b.amount - a.amount); // Sort by amount descending
           
           setCategoryData(categoryDataArray);
@@ -214,7 +203,7 @@ export default function DashboardPage() {
         setDebts(mappedDebts);
         
         // Calculate total debt amount
-        const debtAmount = (debtsData || []).reduce((sum, debt) => sum + Number(debt.amount || 0), 0);
+        const debtAmount = (debtsData || []).reduce((sum, debt) => sum + Number(debt.amount), 0);
         setTotalDebt(debtAmount);
         
         // Calculate total monthly debt payments
@@ -228,16 +217,9 @@ export default function DashboardPage() {
         setNetWorth(assets - totalLiabilitiesAmount);
         
         // Calculate debt-to-income ratio (monthly debt payments / monthly income)
-        // This needs to happen after we set the monthly income
         if (monthlyIncome > 0) {
-          // Get minimum payments from all debts for DTI calculation
-          const monthlyDebtPayments = (debtsData || []).reduce((sum, debt) => sum + Number(debt.min_payment || 0), 0);
-          
-          // Calculate DTI as a percentage (monthly debt payments / monthly income)
           const dti = (monthlyDebtPayments / monthlyIncome) * 100;
           setDebtToIncomeRatio(dti);
-        } else {
-          setDebtToIncomeRatio(0); // Default to 0 if no income
         }
         
         // Estimate debt payoff date (simplified calculation)
@@ -263,25 +245,18 @@ export default function DashboardPage() {
           .from('budgets')
           .select('*');
         
-        if (budgetsData && formattedTransactions) {
-          // Use the transactions directly for budget calculations
-          const currentMonthTxns = formattedTransactions.filter((t: Transaction) => {
-            const transactionDate = new Date(t.date);
-            return transactionDate.getMonth() === currentMonth && 
-                   transactionDate.getFullYear() === currentYear;
-          });
-          
+        if (budgetsData) {
           // Calculate spent amount for each budget
           const budgetsWithProgress = budgetsData.map(budget => {
             // Find transactions in this category
-            const categoryTransactions = currentMonthTxns.filter((t: Transaction) => 
+            const categoryTransactions = currentMonthTransactions.filter(t => 
               t.type.toLowerCase() === 'expense' && 
               t.category && 
               t.category.toLowerCase() === budget.category.toLowerCase()
             );
             
             // Calculate total spent
-            const spentAmount = categoryTransactions.reduce((sum: number, t: Transaction) => sum + Math.abs(Number(t.total)), 0);
+            const spentAmount = categoryTransactions.reduce((sum, t) => sum + Math.abs(Number(t.total)), 0);
             
             // Calculate percentage
             const percentage = budget.amount > 0 ? (spentAmount / budget.amount) * 100 : 0;

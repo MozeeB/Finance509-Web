@@ -51,7 +51,7 @@ export default function AddTransactionPage() {
 
   // Watch the transaction type to adjust UI
   const transactionType = watch("type");
-  const isIncome = transactionType === "income";
+  const isIncome = transactionType.toLowerCase() === "income";
 
   useEffect(() => {
     async function fetchData() {
@@ -117,7 +117,7 @@ export default function AddTransactionPage() {
       }
       
       // Format the amount based on transaction type
-      const amount = data.type === "expense" 
+      const amount = data.type.toLowerCase() === "expense" 
         ? -Math.abs(data.total) 
         : Math.abs(data.total);
       

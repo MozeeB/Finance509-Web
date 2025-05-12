@@ -1,21 +1,18 @@
 /**
  * Format a number as currency
- * This function formats a number as currency without changing the sign.
- * The sign will be preserved in the formatted output.
+ * This function formats a number as currency without adding any sign.
+ * The caller is responsible for adding signs if needed.
  */
 export function formatCurrency(amount: number, currency = 'USD'): string {
-  // Format the absolute value and then add the sign manually
-  const formatted = new Intl.NumberFormat('en-US', {
+  // Format the absolute value without any sign
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-    // Don't add the sign as part of the formatting
+    // Never display signs
     signDisplay: 'never',
   }).format(Math.abs(amount));
-  
-  // Return the formatted value with the correct sign
-  return amount >= 0 ? formatted : `-${formatted}`;
 }
 
 /**

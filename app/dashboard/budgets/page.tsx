@@ -46,7 +46,7 @@ export default function BudgetsPage() {
           .select('category, total')
           .gte('date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
           .lte('date', new Date().toISOString())
-          .eq('type', 'Expense');
+          .eq('type', 'expense'); // Using lowercase to match database values
         
         // Calculate spent amount for each budget
         const budgetsWithProgress = (budgets || []).map(budget => {
@@ -144,7 +144,7 @@ export default function BudgetsPage() {
                   </div>
                   <div className="flex gap-1">
                     <Link 
-                      href={`/dashboard/budgets/${budget.id}`} 
+                      href={`/dashboard/budgets/edit/${budget.id}`} 
                       className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
                     >
                       <Pencil className="h-4 w-4" />

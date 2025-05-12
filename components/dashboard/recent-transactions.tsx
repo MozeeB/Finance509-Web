@@ -39,8 +39,8 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                       {transaction.date} • {transaction.category}
                     </p>
                   </div>
-                  <div className={`font-medium ${transaction.type === 'Income' ? 'text-green-500' : 'text-red-500'}`}>
-                    {transaction.type === 'Income' ? '+' : '-'}{formatCurrency(Math.abs(transaction.total))}
+                  <div className={`font-medium ${transaction.type.toLowerCase() === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {transaction.type.toLowerCase() === 'income' ? '+' : '-'} {formatCurrency(Math.abs(transaction.total))}
                   </div>
                 </div>
               ))}

@@ -49,7 +49,7 @@ export default function EmergencyFundPage() {
         const { data: transactions } = await supabase
           .from('transactions')
           .select('total')
-          .eq('type', 'Expense')
+          .eq('type', 'expense') // Using lowercase to match database values
           .gte('date', new Date(new Date().getFullYear(), new Date().getMonth() - 3, 1).toISOString())
           .lte('date', new Date().toISOString());
         

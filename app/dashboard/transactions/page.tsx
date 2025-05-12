@@ -135,7 +135,7 @@ export default function TransactionsPage() {
           onClick={() => setFilter('income')}
           className={`px-3 py-1.5 rounded-md text-sm ${
             filter === 'income' 
-              ? 'bg-[hsl(var(--income))] text-white' 
+              ? 'bg-green-600 text-white' 
               : 'bg-muted hover:bg-muted/80'
           }`}
         >
@@ -145,7 +145,7 @@ export default function TransactionsPage() {
           onClick={() => setFilter('expense')}
           className={`px-3 py-1.5 rounded-md text-sm ${
             filter === 'expense' 
-              ? 'bg-[hsl(var(--expense))] text-white' 
+              ? 'bg-red-600 text-white' 
               : 'bg-muted hover:bg-muted/80'
           }`}
         >
@@ -198,13 +198,10 @@ export default function TransactionsPage() {
                       {transaction.account_name}
                     </td>
                     <td className={`px-4 py-3 text-right font-medium ${
-                      transaction.type === 'Income' 
-                        ? 'text-[hsl(var(--income))]' : 'text-[hsl(var(--expense))]'
+                      transaction.type.toLowerCase() === 'income' 
+                        ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                     }`}>
-                      {formatCurrency(transaction.type === 'Income' 
-                        ? Number(transaction.total) // For income, use the positive value
-                        : -Math.abs(Number(transaction.total)) // For expense, ensure it's negative
-                      )}
+                      {transaction.type.toLowerCase() === 'income' ? '+' : '-'} {formatCurrency(Math.abs(Number(transaction.total)))}
                     </td>
                   </tr>
                 ))}
