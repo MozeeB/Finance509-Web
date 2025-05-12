@@ -198,9 +198,13 @@ export default function TransactionsPage() {
                       {transaction.account_name}
                     </td>
                     <td className={`px-4 py-3 text-right font-medium ${
-                      transaction.type === 'Income' ? 'text-[hsl(var(--income))]' : 'text-[hsl(var(--expense))]'
+                      transaction.type === 'Income' 
+                        ? 'text-[hsl(var(--income))]' : 'text-[hsl(var(--expense))]'
                     }`}>
-                      {transaction.type === 'Income' ? '+' : '-'}{formatCurrency(Math.abs(Number(transaction.total)))}
+                      {formatCurrency(transaction.type === 'Income' 
+                        ? Number(transaction.total) // For income, use the positive value
+                        : -Math.abs(Number(transaction.total)) // For expense, ensure it's negative
+                      )}
                     </td>
                   </tr>
                 ))}
