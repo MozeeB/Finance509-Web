@@ -8,8 +8,14 @@ import { ArrowLeft } from 'lucide-react';
 import EditBudgetForm from './budget-form';
 import { Budget } from '../../../../../types/database';
 
+type PageProps = {
+  params: {
+    id: string;
+  };
+};
+
 // This is a client component that fetches the initial data
-export default function EditBudgetPage({ params }: { params: { id: string } }) {
+export default function EditBudgetPage({ params }: PageProps) {
   const router = useRouter();
   const budgetId = params.id;
   const [budgetData, setBudgetData] = useState<Budget | null>(null);
