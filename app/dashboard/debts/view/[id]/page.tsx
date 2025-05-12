@@ -3,12 +3,12 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { getCurrentUser } from '@/utils/auth-service';
+import { getCurrentUser } from '../../../../../utils/auth-service';
 import { ArrowLeft, CalendarClock, DollarSign, Percent, CreditCard, FileText, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import Link from "next/link";
-import { formatCurrency } from "@/utils/format";
-import { Debt } from '@/types/database';
-import { useToast } from "@/components/ui/use-toast";
+import { formatCurrency } from "../../../../../utils/format";
+import { Debt } from '../../../../../types/database';
+import { useToast } from "../../../../../components/ui/use-toast";
 
 export default function DebtViewPage({ params }: { params: Promise<{ id: string }> }) {
   // Unwrap params using React.use()

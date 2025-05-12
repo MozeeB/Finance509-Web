@@ -46,7 +46,7 @@ export async function signIn(email: string, password: string): Promise<AuthRespo
 /**
  * Sign up with email and password
  */
-export async function signUp(email: string, password: string): Promise<AuthResponse> {
+export async function signUp(email: string, password: string, fullName?: string): Promise<AuthResponse> {
   try {
     const supabase = createClientComponentClient();
     
@@ -55,6 +55,7 @@ export async function signUp(email: string, password: string): Promise<AuthRespo
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: fullName ? { full_name: fullName } : undefined
       },
     });
     

@@ -7,14 +7,14 @@ import Link from "next/link";
 import { LockKeyhole, Mail, UserPlus, CheckCircle } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { signUp } from '../../../utils/auth-service';
 
 export default function SignUp() {
-  // Initialize Supabase client
-  const supabase = createClientComponentClient();
+  // Use router for navigation
   const router = useRouter();
   
   // Form state
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   
@@ -37,17 +37,13 @@ export default function SignUp() {
     }
     
     try {
-      // Sign up with email and password
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
+      // Use the auth service to sign up
+      // First, let's update the signUp function in auth-service.ts to accept name parameter
+      // For now, we'll use the existing function
+      const result = await signUp(email, password, name);
       
-      if (error) {
-        throw error;
+      if (!result.success) {
+        throw new Error(result.error);
       }
       
       // Show success state
@@ -101,6 +97,24 @@ export default function SignUp() {
         
         <form className="flex-1 flex flex-col" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
+              <div className="relative">
+                <div className="absolute left-3 top-3 text-muted-foreground">
+                  <UserPlus className="h-4 w-4" />
+                </div>
+                <Input 
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your full name" 
+                  className="pl-10 mint-input" 
+                  required 
+                />
+              </div>
+            </div>
+            
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
               <div className="relative">

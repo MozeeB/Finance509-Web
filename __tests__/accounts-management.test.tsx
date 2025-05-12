@@ -8,12 +8,22 @@ import { toast } from 'react-hot-toast';
 jest.mock('@supabase/auth-helpers-nextjs');
 jest.mock('next/navigation');
 jest.mock('react-hot-toast');
-jest.mock('@/utils/auth-service', () => ({
+jest.mock('../utils/auth-service', () => ({
   getCurrentUser: jest.fn().mockResolvedValue({ success: true, user: { id: 'test-user-id' } }),
 }));
 
+// Define types for the account form
+interface Account {
+  id?: string;
+  name: string;
+  type: string;
+  value: number;
+  currency: string;
+  notes: string;
+}
+
 // Mock account form component for testing
-const MockAccountForm = ({ onSubmit, initialAccount = null, isEdit = false }) => {
+const MockAccountForm = ({ onSubmit, initialAccount = null, isEdit = false }: { onSubmit: (data: Account) => void; initialAccount: Account | null; isEdit: boolean }) => {
   return (
     <form data-testid="account-form" onSubmit={(e) => { 
       e.preventDefault(); 
@@ -75,7 +85,7 @@ describe('Accounts Management', () => {
   });
 
   test('renders the add account form', () => {
-    render(<MockAccountForm onSubmit={jest.fn()} />);
+    render(<MockAccountForm onSubmit={jest.fn()} initialAccount={null} isEdit={false} />);
     
     expect(screen.getByLabelText(/Account Name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Account Type/i)).toBeInTheDocument();
@@ -112,7 +122,7 @@ describe('Accounts Management', () => {
       select: jest.fn().mockReturnValue({ error: null, data: [{ id: 'new-account-id' }] }),
     });
 
-    render(<MockAccountForm onSubmit={mockOnSubmit} />);
+    render(<MockAccountForm onSubmit={mockOnSubmit} initialAccount={null} isEdit={false} />);
     
     // Submit the form
     fireEvent.click(screen.getByText('Add Account'));
@@ -130,7 +140,7 @@ describe('Accounts Management', () => {
 
   test('handles account creation with Supabase', async () => {
     // This test simulates how the actual component would interact with Supabase
-    const handleAddAccount = async (accountData) => {
+    const handleAddAccount = async (accountData: Account) => {
       const supabase = createClientComponentClient();
       
       const { error } = await supabase
@@ -180,7 +190,7 @@ describe('Accounts Management', () => {
 
   test('handles account update with Supabase', async () => {
     // This test simulates how the component would handle updates
-    const handleUpdateAccount = async (accountId, accountData) => {
+    const handleUpdateAccount = async (accountId: string, accountData: Account) => {
       const supabase = createClientComponentClient();
       
       const { error } = await supabase
@@ -228,7 +238,7 @@ describe('Accounts Management', () => {
 
   test('handles account deletion with Supabase', async () => {
     // This test simulates how the component would handle deletion
-    const handleDeleteAccount = async (accountId) => {
+    const handleDeleteAccount = async (accountId: string) => {
       const supabase = createClientComponentClient();
       
       const { error } = await supabase

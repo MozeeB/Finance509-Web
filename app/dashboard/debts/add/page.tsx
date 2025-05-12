@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { getCurrentUser } from '@/utils/auth-service';
+import { getCurrentUser } from '../../../../utils/auth-service';
 import { ArrowLeft, DollarSign, Calendar, Percent, CreditCard, ArrowDown, ArrowUp, Info } from "lucide-react";
 import Link from "next/link";
 import { z } from "zod";

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 
 interface SummaryCardProps {
   title: string;

@@ -3,13 +3,13 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { getCurrentUser } from '@/utils/auth-service';
+import { getCurrentUser } from '../../../../../utils/auth-service';
 import { ArrowLeft, Building, CreditCard, Wallet, DollarSign, PiggyBank, Info } from "lucide-react";
 import Link from "next/link";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Account } from '@/types/database';
+import { Account } from '../../../../../types/database';
 
 // Define form schema with Zod
 const accountSchema = z.object({
