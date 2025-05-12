@@ -1,12 +1,12 @@
 "use client";
 
-import { formatCurrency } from "@/utils/format";
+import { formatCurrency } from "../../../utils/format";
 import { PlusCircle, Filter, Download, ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { getCurrentUser } from '@/utils/auth-service';
-import { Transaction } from '@/types/database';
+import { getCurrentUser } from '../../../utils/auth-service';
+import { Transaction } from '../../../types/database';
 
 // Using the imported Transaction type from database.ts
 

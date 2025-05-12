@@ -8,7 +8,7 @@ import {
   Legend
 } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
-import { formatCurrency } from '@/utils/format';
+import { formatCurrency } from '../../../utils/format';
 
 // Register Chart.js components
 ChartJS.register(

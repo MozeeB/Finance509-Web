@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatCurrency } from "@/utils/format";
+import { formatCurrency } from "../../utils/format";
 import { PlusCircle, ArrowUpRight, ArrowDownRight, CreditCard, Wallet, PiggyBank, BarChart3, Calendar, TrendingUp, PieChart } from "lucide-react";
 import Link from "next/link";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { getCurrentUser } from '@/utils/auth-service';
-import { Account, Transaction, Debt, Budget, EmergencyFund } from '@/types/database';
-import { MonthlyTrendChart, MonthlyChartData } from '@/components/dashboard/charts/monthly-trend-chart';
-import { ExpenseCategoriesChart, CategoryData } from '@/components/dashboard/charts/expense-categories-chart';
+import { getCurrentUser } from '../../utils/auth-service';
+import { Account, Transaction, Debt, Budget, EmergencyFund } from '../../types/database';
+import { MonthlyTrendChart, MonthlyChartData } from '../../components/dashboard/charts/monthly-trend-chart';
+import { ExpenseCategoriesChart, CategoryData } from '../../components/dashboard/charts/expense-categories-chart';
 
 // Define additional types for dashboard display
 type BudgetWithProgress = Budget & {

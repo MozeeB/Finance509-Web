@@ -1,10 +1,10 @@
 "use client";
 
-import { DashboardNav } from "@/components/dashboard/dashboard-nav";
+import { DashboardNav } from "../../components/dashboard/dashboard-nav";
 import Link from "next/link";
 import { User, Bell, BarChart3 } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { SignOutButton } from "@/components/sign-out-button";
+import { ThemeToggle } from "../../components/theme-toggle";
+import { SignOutButton } from "../../components/sign-out-button";
 import { Suspense, useState, useEffect } from "react";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 

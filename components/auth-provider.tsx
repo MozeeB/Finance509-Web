@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 
 // Import the client directly to avoid cookie parsing issues
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "../utils/supabase/client";
 
 // Create a context for authentication
 type AuthContextType = {

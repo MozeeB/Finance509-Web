@@ -1,12 +1,12 @@
 "use client";
 
-import { formatCurrency } from "@/utils/format";
+import { formatCurrency } from "../../../utils/format";
 import { PiggyBank, Edit } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { getCurrentUser } from '@/utils/auth-service';
-import { EmergencyFund, Transaction } from '@/types/database';
+import { getCurrentUser } from '../../../utils/auth-service';
+import { EmergencyFund, Transaction } from '../../../types/database';
 
 // Using the imported EmergencyFund type from database.ts
 

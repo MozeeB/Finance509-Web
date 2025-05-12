@@ -1,12 +1,12 @@
 "use client";
 
-import { formatCurrency } from "@/utils/format";
+import { formatCurrency } from "../../../utils/format";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { getCurrentUser } from '@/utils/auth-service';
-import { Budget, Transaction } from '@/types/database';
+import { getCurrentUser } from '../../../utils/auth-service';
+import { Budget, Transaction } from '../../../types/database';
 
 // Using the imported Budget type from database.ts
 

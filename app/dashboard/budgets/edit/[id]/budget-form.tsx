@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { getCurrentUser } from '@/utils/auth-service';
+import { getCurrentUser } from '../../../../../utils/auth-service';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from 'react-hot-toast';
 import { Trash2, DollarSign, Calendar, Tag } from "lucide-react";
-import { formatCurrency } from "@/utils/format";
-import { Budget } from "@/types/database";
+import { formatCurrency } from "../../../../../utils/format";
+import { Budget } from "../../../../../types/database";
 
 // Form schema
 const budgetSchema = z.object({

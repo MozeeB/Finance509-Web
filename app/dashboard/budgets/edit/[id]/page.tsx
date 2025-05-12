@@ -6,7 +6,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import EditBudgetForm from './budget-form';
-import { Budget } from '@/types/database';
+import { Budget } from '../../../../../types/database';
 
 // This is a client component that fetches the initial data
 export default function EditBudgetPage({ params }: { params: { id: string } }) {

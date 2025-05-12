@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "./ui/button";
 import { LogOut, Loader2 } from "lucide-react";
-import { supabase } from "@/utils/supabase/client";
+import { supabase } from "../utils/supabase/client";
 import { useState } from "react";
 
 export function SignOutButton() {

@@ -5,9 +5,9 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { User } from '@supabase/supabase-js';
 import { Save, Moon, Sun, Bell, BellOff, Download, LogOut, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import { getCurrentUser, signOut } from '@/utils/auth-service';
+import { getCurrentUser, signOut } from '../../../utils/auth-service';
 import toast from 'react-hot-toast';
-import { Profile } from '@/types/database';
+import { Profile } from '../../../types/database';
 
 export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null);

@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { getCurrentUser } from '@/utils/auth-service';
-import { Transaction, Account } from '@/types/database';
-import { formatCurrency } from "@/utils/format";
+import { getCurrentUser } from '../../../../utils/auth-service';
+import { Transaction, Account } from '../../../../types/database';
+import { formatCurrency } from "../../../../utils/format";
 import { ArrowLeft, Check, CreditCard, DollarSign, Calendar, Tag } from "lucide-react";
 import Link from "next/link";
 import { z } from "zod";

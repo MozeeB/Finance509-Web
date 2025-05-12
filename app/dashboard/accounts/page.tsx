@@ -1,12 +1,12 @@
 "use client";
 
-import { formatCurrency } from "@/utils/format";
+import { formatCurrency } from "../../../utils/format";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { getCurrentUser } from '@/utils/auth-service';
-import { Account } from '@/types/database';
+import { getCurrentUser } from '../../../utils/auth-service';
+import { Account } from '../../../types/database';
 
 export default function AccountsPage() {
   const [accounts, setAccounts] = useState<Account[]>([]);

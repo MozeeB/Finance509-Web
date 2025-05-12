@@ -7,14 +7,28 @@ import '@testing-library/jest-dom';
 
 // Mock the budget form component instead of importing it directly
 // This avoids module resolution issues in the test environment
-const MockEditBudgetForm = ({ budgetId, initialBudget, categories }) => {
+interface Budget {
+  id: string;
+  category: string;
+  budget_amount: number;
+  start_date: string;
+  end_date: string;
+}
+
+interface MockEditBudgetFormProps {
+  budgetId: string;
+  initialBudget: Budget;
+  categories: string[];
+}
+
+const MockEditBudgetForm = ({ budgetId, initialBudget, categories }: MockEditBudgetFormProps) => {
   const router = useRouter();
   const [error, setError] = React.useState(null);
   const [isSaving, setIsSaving] = React.useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
   
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     
@@ -36,7 +50,7 @@ const MockEditBudgetForm = ({ budgetId, initialBudget, categories }) => {
       toast.success('Budget updated successfully!');
       router.push('/dashboard/budgets');
     } catch (error) {
-      setError('Failed to update budget. Please try again.');
+      setError('Failed to update budget. Please try again.' as any);
       toast.error('Failed to update budget');
     } finally {
       setIsSaving(false);
@@ -64,7 +78,7 @@ const MockEditBudgetForm = ({ budgetId, initialBudget, categories }) => {
       toast.success('Budget deleted successfully!');
       router.push('/dashboard/budgets');
     } catch (error) {
-      setError('Failed to delete budget');
+      setError('Failed to delete budget' as any);
       toast.error('Failed to delete budget');
     } finally {
       setIsDeleting(false);
@@ -90,7 +104,7 @@ const MockEditBudgetForm = ({ budgetId, initialBudget, categories }) => {
               id="category" 
               defaultValue={initialBudget.category}
             >
-              {categories.map(category => (
+              {categories.map((category: string) => (
                 <option key={category} value={category}>{category}</option>
               ))}
             </select>

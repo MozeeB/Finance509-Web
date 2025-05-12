@@ -1,7 +1,7 @@
-import Hero from "@/components/hero";
+import Hero from "../components/hero";
 import { ArrowRight, CheckCircle2, Shield } from "lucide-react";
 import Link from "next/link";
-import { RootAuthCheck } from "@/components/root-auth-check";
+import { RootAuthCheck } from "../components/root-auth-check";
 
 export default function Home() {
   return (

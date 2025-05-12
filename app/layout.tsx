@@ -1,11 +1,12 @@
-import { Toaster } from "@/components/ui/toaster";
-import { hasEnvVars } from "@/utils/supabase/check-env-vars";
+import { Toaster } from "react-hot-toast";
+import { Toaster as UIToaster } from "../components/ui/toaster";
+import { hasEnvVars } from "../utils/supabase/check-env-vars";
 import { Inter } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/components/auth-provider";
+import { ThemeProvider } from "../components/theme-provider";
+import { AuthProvider } from "../components/auth-provider";
 import Link from "next/link";
 import "./globals.css";
-import HeaderAuth from "@/components/header-auth";
+import HeaderAuth from "../components/header-auth";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -35,7 +36,17 @@ export default function RootLayout({
           <AuthProvider>
             <main className="min-h-screen flex flex-col" suppressHydrationWarning>
               {children}
-              <Toaster />
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 3000,
+                  style: {
+                    background: 'hsl(var(--background))',
+                    color: 'hsl(var(--foreground))',
+                    border: '1px solid hsl(var(--border))',
+                  },
+                }}
+              />
             </main>
           </AuthProvider>
         </ThemeProvider>

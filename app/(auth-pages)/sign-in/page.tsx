@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
 import Link from "next/link";
 import { CreditCard, LockKeyhole, Mail, CheckCircle } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState, useEffect } from 'react';
-import { signIn } from "@/utils/auth-service";
+import { signIn } from "../../../utils/auth-service";
 
 export default function SignIn() {
   const router = useRouter();
