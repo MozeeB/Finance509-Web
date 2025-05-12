@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import EditBudgetForm from './budget-form';
+import EditBudgetForm from './edit-budget-form';
 import { Budget } from '@/types/database';
 
 interface PageProps {
