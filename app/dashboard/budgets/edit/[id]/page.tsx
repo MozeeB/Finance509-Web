@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { getCurrentUser } from '@/utils/auth-service';
@@ -23,9 +23,15 @@ const budgetSchema = z.object({
 
 type BudgetFormValues = z.infer<typeof budgetSchema>;
 
-export default function EditBudgetPage({ params }: { params: { id: string } }) {
+// Define the page props type to match Next.js expectations
+type PageProps = {
+  params: { id: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
+};
+
+export default function EditBudgetPage({ params }: PageProps) {
   // Get the budget ID from params
-  const budgetId = params.id;
+  const budgetId = params.id as string;
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
